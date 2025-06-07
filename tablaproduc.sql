@@ -1,4 +1,13 @@
-use db_ventas;
+USE db_ventas;
+
+-- Eliminar primero las tablas que tienen claves foráneas
+DROP TABLE IF EXISTS detalle_ventas;
+DROP TABLE IF EXISTS ventas;
+
+-- Luego puedes eliminar las tablas principales
+DROP TABLE IF EXISTS usuarios;
+DROP TABLE IF EXISTS clientes;
+DROP TABLE IF EXISTS productos;
 
 CREATE TABLE productos (
 id INT AUTO_INCREMENT PRIMARY KEY,
