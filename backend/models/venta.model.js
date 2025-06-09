@@ -29,33 +29,55 @@ const obtenerVentaPorId = (id, callback) => {
   db.query(sql, [id], callback);
 };
 
-// Crear nueva venta con sus detalles
+// Crear nueva venta con validaciones y retorno de detalles
 const crearVentaConDetalles = (venta, callback) => {
   const { cliente_id, usuario_id, total, detalles } = venta;
 
-  const ventaSql = `INSERT INTO ventas (cliente_id, usuario_id, total) VALUES (?, ?, ?)`;
+  if (!Array.isArray(detalles) || detalles.length === 0) {
+    return callback(new Error('La venta debe contener al menos un detalle.'));
+  }
 
-  db.query(ventaSql, [cliente_id, usuario_id, total], (err, result) => {
+  // Validar existencia del cliente y usuario antes de continuar
+  const validarSql = `
+    SELECT 
+      (SELECT COUNT(*) FROM clientes WHERE id = ?) AS clienteValido,
+      (SELECT COUNT(*) FROM usuarios WHERE id = ?) AS usuarioValido
+  `;
+
+  db.query(validarSql, [cliente_id, usuario_id], (err, results) => {
     if (err) return callback(err);
 
-    const ventaId = result.insertId;
+    const [validacion] = results;
+    if (!validacion.clienteValido || !validacion.usuarioValido) {
+      return callback(new Error('Cliente o usuario no válido.'));
+    }
 
-    const detalleSql = `
-      INSERT INTO detalle_ventas (venta_id, producto_id, cantidad, precio_unitario, subtotal)
-      VALUES ?
-    `;
+    const ventaSql = `INSERT INTO ventas (cliente_id, usuario_id, total) VALUES (?, ?, ?)`;
 
-    const detalleValores = detalles.map(d => [
-      ventaId,
-      d.producto_id,
-      d.cantidad,
-      d.precio_unitario,
-      d.subtotal
-    ]);
-
-    db.query(detalleSql, [detalleValores], (err2) => {
+    db.query(ventaSql, [cliente_id, usuario_id, total], (err2, result) => {
       if (err2) return callback(err2);
-      callback(null, { insertId: ventaId });
+
+      const ventaId = result.insertId;
+
+      const detalleSql = `
+        INSERT INTO detalle_ventas (venta_id, producto_id, cantidad, precio_unitario, subtotal)
+        VALUES ?
+      `;
+
+      const detalleValores = detalles.map(d => [
+        ventaId,
+        d.producto_id,
+        d.cantidad,
+        d.precio_unitario,
+        d.subtotal
+      ]);
+
+      db.query(detalleSql, [detalleValores], (err3) => {
+        if (err3) return callback(err3);
+
+        // Retornar la venta recién creada con sus detalles
+        obtenerVentaPorId(ventaId, callback);
+      });
     });
   });
 };
@@ -67,7 +89,6 @@ const eliminarVenta = (id, callback) => {
 
   db.query(borrarDetallesSql, [id], (err) => {
     if (err) return callback(err);
-
     db.query(borrarVentaSql, [id], callback);
   });
 };
