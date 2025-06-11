@@ -5,6 +5,9 @@ const productosRoutes = require('./routes/productos.routes');
 const clientesRoutes = require('./routes/clientes.routes');
 const usuariosRoutes = require('./routes/usuarios.routes');
 const ventasRoutes = require('./routes/ventas.routes');
+const detalleVentasRoutes = require('./routes/detalle_ventas.routes');
+app.use('/api/detalle-ventas', detalleVentasRoutes);
+
 
 app.use(cors());
 app.use(express.json());

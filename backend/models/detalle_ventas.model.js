@@ -5,7 +5,7 @@ const obtenerDetallesVenta = (callback) => {
   const sql = `
     SELECT d.id, d.venta_id, d.producto_id, p.nombre AS producto,
            d.cantidad, d.precio_unitario, d.subtotal
-    FROM  d
+    FROM detalle_ventas d
     JOIN productos p ON d.producto_id = p.id
     ORDER BY d.venta_id DESC
   `;
