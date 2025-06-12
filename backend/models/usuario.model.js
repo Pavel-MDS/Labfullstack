@@ -1,5 +1,5 @@
 const db = require('../db/connection');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Obtener todos los usuarios
 const obtenerUsuarios = (callback) => {
