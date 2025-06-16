@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import './Cliente.css'; // Asegúrate de crear este archivo con estilos si lo necesitas
+import './Clientes.css'; // Asegúrate de que este archivo exista
 
-const Cliente = () => {
+const Clientes = () => {
   const [clientes, setClientes] = useState([]);
   const [nuevoCliente, setNuevoCliente] = useState({ nombre: '', correo: '' });
 
@@ -93,4 +93,4 @@ const Cliente = () => {
   );
 };
 
-export default Cliente;
+export default Clientes;

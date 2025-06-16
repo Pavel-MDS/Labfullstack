@@ -4,6 +4,7 @@ import Layout from './layouts/Layout';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Productos from "./pages/Productos";
+import Clientes from "./pages/Clientes"; // Asegúrate de importar Clientes.jsx
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/productos" element={<Productos />} />
+          <Route path="/clientes" element={<Clientes />} />
           <Route path="/login" element={<Login />} />
         </Route>
       </Routes>
@@ -20,3 +22,4 @@ const App = () => {
 };
 
 export default App;
+
