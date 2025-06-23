@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { getClientes, createCliente, updateCliente, deleteCliente} from '../services/clienteService';
-import axios from 'axios';
-import './Clientes.css'; // Asegúrate de que este archivo exista
+import './Clientes.css';
 
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
-  const [nuevoCliente, setNuevoCliente] = useState({ nombre: '', correo: '' });
   const [formData, setFormData] = useState({ nombre: '',documento_identidad: '', direccion: '', telefono: '' });
   const [editando, setEditando] = useState(false);
   const [clienteId, setClienteId] = useState(null);
