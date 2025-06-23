@@ -1,87 +1,154 @@
 import React, { useEffect, useState } from 'react';
+import { getClientes, createCliente, updateCliente, deleteCliente} from '../services/clienteService';
 import axios from 'axios';
 import './Clientes.css'; // Asegúrate de que este archivo exista
+
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
   const [nuevoCliente, setNuevoCliente] = useState({ nombre: '', correo: '' });
+  const [formData, setFormData] = useState({ nombre: '',documento_identidad: '', direccion: '', telefono: '' });
+  const [editando, setEditando] = useState(false);
+  const [clienteId, setClienteId] = useState(null);
 
   useEffect(() => {
-    obtenerClientes();
+    cargarClientes();
   }, []);
 
-  const obtenerClientes = async () => {
-    try {
-      const res = await axios.get('http://localhost:3001/api/clientes');
-      setClientes(res.data);
-    } catch (error) {
-      console.error('Error al obtener los clientes:', error);
-    }
+  const cargarClientes = () => {
+    getClientes().then(res => setClientes(res.data));
   };
 
-  const handleChange = (e) => {
-    setNuevoCliente({ ...nuevoCliente, [e.target.name]: e.target.value });
+  const handleChange = e => {
+    setFormData({ ...formData, [e.target.name]: e.target.value
+});
   };
 
-  const agregarCliente = async () => {
-    if (!nuevoCliente.nombre || !nuevoCliente.correo) return;
-    try {
-      await axios.post('http://localhost:3001/api/clientes', nuevoCliente);
-      setNuevoCliente({ nombre: '', correo: '' });
-      obtenerClientes();
-    } catch (error) {
-      console.error('Error al agregar cliente:', error);
-    }
-  };
+  const handleSubmit = e => {
+    e.preventDefault();
+    if (editando) {
+      updateCliente(clienteId, formData).then(() => {
+        cargarClientes();
+        resetForm();
+      });
+    } else {
+        createCliente(formData).then(() => {
+          cargarClientes();
+          resetForm();
+        });
+      }
+    };
+    const handleEdit = cliente => {
+      setFormData({
+        nombre: cliente.nombre,
+        documento_identidad: cliente.documento_identidad,
+        direccion: cliente.direccion,
+        telefono: cliente.telefono
+      });
+      setEditando(true);
+      setClienteId(cliente.id);
+    };
 
-  const eliminarCliente = async (id) => {
-    try {
-      await axios.delete(`http://localhost:3001/api/clientes/${id}`);
-      obtenerClientes();
-    } catch (error) {
-      console.error('Error al eliminar cliente:', error);
-    }
-  };
+    const handleDelete = id => {
+      deleteCliente(id).then(() => cargarClientes());
+    };
+    
+    const resetForm = () => {
+      setFormData({ nombre: '', documento_identidad: '', direccion: '', telefono: '' });
+      setEditando(false);
+      setClienteId(null);
+    };
 
   return (
-    <div className="contenedor">
-      <h2 className="titulo">Gestión de Clientes</h2>
+    <div className="container mt-4">
+      <h3>Clientes</h3>
 
-      <div className="formulario">
-        <input
-          type="text"
-          name="nombre"
-          placeholder="Nombre"
-          value={nuevoCliente.nombre}
-          onChange={handleChange}
-        />
-        <input
-          type="email"
-          name="correo"
-          placeholder="Correo"
-          value={nuevoCliente.correo}
-          onChange={handleChange}
-        />
-        <button onClick={agregarCliente}>Añadir</button>
-      </div>
+      <form className="row g-3 mb-4" onSubmit={handleSubmit}>
+        <div className="col-md-3">
+          <input
+            type="text"
+            className="form-control"
+            name="nombre"
+            value={formData.nombre}
+            onChange={handleChange}
+            placeholder="Nombre"
+            required
+          />
+        </div>
 
-      <table className="tabla">
+        <div className="col-md-3">
+          <input
+            type="text"
+            className="form-control"
+            name="documento_identidad"
+            value={formData.documento_identidad}
+            onChange={handleChange}
+            placeholder="Documento de Identidad"
+            required
+          />
+        </div>
+
+        <div className="col-md-3">
+          <input
+            type="text"
+            className="form-control"
+            name="direccion"
+            value={formData.direccion}
+            onChange={handleChange}
+            placeholder="Dirección"
+            required
+          />
+        </div>
+
+        <div className="col-md-2">
+          <input
+            type="text"
+            className="form-control"
+            name="telefono"
+            value={formData.telefono}
+            onChange={handleChange}
+            placeholder="Teléfono"
+            required
+          />
+        </div>
+
+        <div className="col-md-1">
+          <button type="submit" className="btn btn-primary w-100">
+            {editando ? 'Actualizar' : 'Agregar'}
+          </button>
+        </div>
+      </form>
+
+      <table className="table table-striped">
         <thead>
           <tr>
             <th>ID</th>
             <th>Nombre</th>
-            <th>Correo</th>
+            <th>Documento</th>
+            <th>Dirección</th>
+            <th>Teléfono</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {clientes.map((cliente) => (
-            <tr key={cliente.id}>
-              <td>{cliente.id}</td>
-              <td>{cliente.nombre}</td>
-              <td>{cliente.correo}</td>
+          {clientes.map((c) => (
+            <tr key={c.id}>
+              <td>{c.id}</td>
+              <td>{c.nombre}</td>
+              <td>{c.documento_identidad}</td>
+              <td>{c.direccion}</td>
+              <td>{c.telefono}</td>
               <td>
-                <button onClick={() => eliminarCliente(cliente.id)} className="eliminar">
+                <button
+                  className="btn btn-warning btn-sm me-2"
+                  onClick={() => handleEdit(c)}
+                >
+                  Editar
+                </button>
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => handleDelete(c.id)}
+                >
                   Eliminar
                 </button>
               </td>
@@ -91,6 +158,5 @@ const Clientes = () => {
       </table>
     </div>
   );
-};
-
+}
 export default Clientes;
